@@ -14,11 +14,12 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
-      - name: Upload artifact
-        # use v2 which depends on the newer upload-artifact v4 internals
-        uses: actions/upload-pages-artifact@v2
+      - name: Upload pages artifact (avoid deprecated internals)
+        uses: actions/upload-artifact@v4
         with:
+          name: pages
           path: transcribe
+          overwrite: true
 
       - name: Deploy to GitHub Pages
         uses: actions/deploy-pages@v1
