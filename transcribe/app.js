@@ -5,9 +5,15 @@ const transcriptEl = document.getElementById('transcript');
 
 let recognition;
 let isListening = false;
+// keep committed (finalized) transcript separate so we can append interim text live
+let committedText = '';
 
 function appendText(text){
-  transcriptEl.value = transcriptEl.value ? transcriptEl.value + "\n" + text : text;
+  // add finalized text to the committed buffer and render
+  committedText = committedText ? committedText + "\n" + text : text;
+  transcriptEl.value = committedText;
+  // scroll to end so user sees latest text
+  transcriptEl.scrollTop = transcriptEl.scrollHeight;
 }
 
 async function setupRecognition(){
@@ -31,8 +37,16 @@ async function setupRecognition(){
       else interimText += res[0].transcript;
     }
     if (finalText) appendText(finalText.trim());
-    // show interim in placeholder style
-    transcriptEl.placeholder = interimText ? interimText.trim() : 'Transcription will appear here...';
+
+    // Always render interim appended to committed text so user sees live speech
+    if (interimText) {
+      const display = committedText ? committedText + "\n" + interimText.trim() : interimText.trim();
+      transcriptEl.value = display;
+    } else {
+      // if no interim, ensure the textarea shows the committed text
+      transcriptEl.value = committedText;
+    }
+    transcriptEl.scrollTop = transcriptEl.scrollHeight;
   };
 
   r.onerror = (e) => {
