@@ -1,10 +1,12 @@
 <!doctype html>
 <html lang="en">
-<head>
+  <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Tools — Home</title>
   <link rel="stylesheet" href="transcribe/styles.css" />
+  <!-- Feather icons (open, MIT) -->
+  <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
 </head>
 <body>
   <main class="container">
@@ -13,12 +15,13 @@
 
     <div class="tool-grid">
       <a class="tool-card" href="transcribe/index.html" title="Live Transcribe">
-        <div class="tool-icon">🎙️</div>
+        <div class="tool-icon" data-feather="mic"></div>
         <div class="tool-name">Live Transcribe</div>
       </a>
       <!-- future tools go here -->
     </div>
   </main>
+  <script>document.addEventListener('DOMContentLoaded', ()=>{ if (window.feather) feather.replace(); });</script>
 </body>
 </html>
 

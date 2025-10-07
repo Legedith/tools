@@ -8,6 +8,41 @@ let isListening = false;
 // keep committed (finalized) transcript separate so we can append interim text live
 let committedText = '';
 
+// Ensure feather icons are loaded and initialize UI icons/labels
+function initIconsAndLabels(){
+  // set button contents (preserve accessibility and allow JS-only fallbacks)
+  try {
+    const mic = document.getElementById('mic');
+    const clear = document.getElementById('clear');
+    const copy = document.getElementById('copy');
+    const back = document.querySelector('.back-link');
+    if (mic) mic.innerHTML = '<i data-feather="mic"></i> <span class="btn-label">Start</span>';
+    if (clear) clear.innerHTML = '<i data-feather="trash-2"></i> <span class="btn-label">Clear</span>';
+    if (copy) copy.innerHTML = '<i data-feather="copy"></i> <span class="btn-label">Copy</span>';
+    if (back) back.innerHTML = '<i data-feather="chevron-left"></i> Back';
+    if (window.feather) {
+      try { feather.replace(); } catch (e) { /* noop */ }
+    }
+  } catch (e) { console.warn('icon init failed', e); }
+}
+
+function ensureFeather(cb){
+  if (window.feather) return cb();
+  const src = 'https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js';
+  const existing = document.querySelector('script[src="' + src + '"]');
+  if (existing) {
+    existing.addEventListener('load', cb);
+    return;
+  }
+  const s = document.createElement('script');
+  s.src = src;
+  s.onload = cb;
+  s.onerror = () => { console.warn('failed to load feather icons'); cb(); };
+  document.head.appendChild(s);
+}
+
+document.addEventListener('DOMContentLoaded', () => ensureFeather(initIconsAndLabels));
+
 function appendText(text){
   // add finalized text to the committed buffer and render
   committedText = committedText ? committedText + "\n" + text : text;
@@ -64,6 +99,7 @@ async function setupRecognition(){
 }
 
 micButton.addEventListener('click', async () => {
+  const label = micButton.querySelector('.btn-label');
   if (!isListening) {
     recognition = recognition || await setupRecognition();
     if (!recognition) return;
@@ -71,12 +107,12 @@ micButton.addEventListener('click', async () => {
       recognition.start();
       isListening = true;
       micButton.setAttribute('aria-pressed', 'true');
-      micButton.textContent = '⏹️ Stop';
+      if (label) label.textContent = 'Stop';
     } catch (e) { console.error(e); }
   } else {
     isListening = false;
     micButton.setAttribute('aria-pressed', 'false');
-    micButton.textContent = '🎙️ Start';
+    if (label) label.textContent = 'Start';
     if (recognition) recognition.stop();
     transcriptEl.placeholder = 'Transcription will appear here...';
   }
@@ -88,10 +124,11 @@ clearButton.addEventListener('click', () => {
 });
 
 copyButton.addEventListener('click', async () => {
+  const label = copyButton.querySelector('.btn-label');
   try {
     await navigator.clipboard.writeText(transcriptEl.value);
-    copyButton.textContent = 'Copied';
-    setTimeout(() => copyButton.textContent = 'Copy', 1200);
+    if (label) label.textContent = 'Copied';
+    setTimeout(() => { if (label) label.textContent = 'Copy'; }, 1200);
   } catch (e) {
     console.error('copy failed', e);
     alert('Copy failed');
